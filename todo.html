@@ -1,0 +1,1378 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml"
+          href="data:image/svg+xml,
+      <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
+        <rect width='100' height='100' rx='22' fill='%237c3aed'/>
+        <path d='M30 52l14 14 26-34' fill='none'
+              stroke='white' stroke-width='10'
+              stroke-linecap='round' stroke-linejoin='round'/>
+      </svg>">
+    <title>My TODO</title>
+    <style>
+        :root{
+            --bg: #0b1020;
+            --panel: rgba(255,255,255,0.06);
+            --panel2: rgba(255,255,255,0.10);
+            --text: rgba(255,255,255,0.92);
+            --muted: rgba(255,255,255,0.65);
+            --border: rgba(255,255,255,0.14);
+            --shadow: 0 18px 55px rgba(0,0,0,0.35);
+            --accent: #7c3aed; /* violet default */
+            --accent2: #22c55e;
+            --danger: #ef4444;
+            --warn: #f59e0b;
+            --ok: #10b981;
+            --radius: 18px;
+            --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+
+            --sb-size: 12px;
+            --sb-radius: 999px;
+
+            /* Track uses your panel/border palette */
+            --sb-track: color-mix(in oklab, var(--panel) 60%, transparent);
+            --sb-track-hover: color-mix(in oklab, var(--panel2) 70%, transparent);
+
+            /* Thumb uses accent + border to look “glassy” */
+            --sb-thumb: color-mix(in oklab, var(--accent) 35%, rgba(255,255,255,0.10));
+            --sb-thumb-hover: color-mix(in oklab, var(--accent) 55%, rgba(255,255,255,0.12));
+            --sb-thumb-active: color-mix(in oklab, var(--accent2) 55%, rgba(255,255,255,0.12));
+
+            /* Subtle outline */
+            --sb-outline: color-mix(in oklab, var(--border) 70%, transparent);
+        }
+
+        /* Light mode overrides */
+        [data-theme="light"]{
+            --bg: #f6f7fb;
+            --panel: rgba(255,255,255,0.75);
+            --panel2: rgba(255,255,255,0.92);
+            --text: rgba(15, 23, 42, 0.92);
+            --muted: rgba(15, 23, 42, 0.62);
+            --border: rgba(15, 23, 42, 0.12);
+            --shadow: 0 18px 55px rgba(2, 6, 23, 0.12);
+        }
+
+        /* Accent palettes */
+        [data-accent="violet"]{ --accent:#7c3aed; --accent2:#22c55e; }
+        [data-accent="cyan"]{   --accent:#06b6d4; --accent2:#3b82f6; }
+        [data-accent="rose"]{   --accent:#f43f5e; --accent2:#fb923c; }
+        [data-accent="lime"]{   --accent:#84cc16; --accent2:#22c55e; }
+        [data-accent="amber"]{  --accent:#f59e0b; --accent2:#ef4444; }
+
+        *{ box-sizing:border-box; }
+        html,body{ height:100%; }
+        /* ---------- Firefox ---------- */
+        html{
+            scrollbar-width: thin; /* auto | thin | none */
+            scrollbar-color: var(--sb-thumb) var(--sb-track);
+        }
+
+        /* ---------- WebKit (Chrome/Edge/Safari) ---------- */
+        *::-webkit-scrollbar{
+            width: var(--sb-size);
+            height: var(--sb-size);
+        }
+
+        *::-webkit-scrollbar-track{
+            background: var(--sb-track);
+            border-radius: var(--sb-radius);
+            box-shadow: inset 0 0 0 1px var(--sb-outline);
+        }
+
+        *::-webkit-scrollbar-thumb{
+            border-radius: var(--sb-radius);
+            background: linear-gradient(
+                    180deg,
+                    color-mix(in oklab, var(--sb-thumb) 90%, transparent),
+                    color-mix(in oklab, var(--sb-thumb) 70%, transparent)
+            );
+            border: 1px solid var(--sb-outline);
+
+            /* “glassy” spacing */
+            background-clip: padding-box;
+            box-shadow:
+                    0 8px 18px rgba(0,0,0,0.22),
+                    inset 0 1px 0 rgba(255,255,255,0.18);
+        }
+
+        *::-webkit-scrollbar-thumb:hover{
+            background: linear-gradient(
+                    180deg,
+                    var(--sb-thumb-hover),
+                    color-mix(in oklab, var(--sb-thumb-hover) 75%, transparent)
+            );
+        }
+
+        *::-webkit-scrollbar-thumb:active{
+            background: linear-gradient(
+                    180deg,
+                    var(--sb-thumb-active),
+                    color-mix(in oklab, var(--sb-thumb-active) 75%, transparent)
+            );
+        }
+
+        *::-webkit-scrollbar-corner{
+            background: transparent;
+        }
+
+        /* Optional: keep scrollbars subtle on touch devices */
+        @media (pointer: coarse){
+            html{ scrollbar-width: auto; }
+            *::-webkit-scrollbar{ width: 10px; height: 10px; }
+        }
+
+        body{
+            margin:0;
+            font-family:var(--sans);
+            color:var(--text);
+            background:
+                    radial-gradient(1000px 500px at 20% 0%, color-mix(in oklab, var(--accent) 35%, transparent) 0%, transparent 60%),
+                    radial-gradient(900px 550px at 100% 10%, color-mix(in oklab, var(--accent2) 25%, transparent) 0%, transparent 62%),
+                    radial-gradient(900px 600px at 60% 120%, rgba(99, 102, 241, 0.18) 0%, transparent 60%),
+                    var(--bg);
+            overflow-x:hidden;
+        }
+
+        .wrap{
+            max-width: 80vw;
+            margin: 40px auto;
+            padding: 0 18px 60px;
+        }
+
+        .topbar{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .brand{
+            display:flex;
+            align-items:center;
+            gap: 12px;
+            min-width: 260px;
+        }
+        .logo{
+            width: 44px; height: 44px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            box-shadow: 0 10px 30px color-mix(in oklab, var(--accent) 25%, rgba(0,0,0,0.4));
+            display:grid;
+            place-items:center;
+            flex: 0 0 auto;
+        }
+        .logo svg{ filter: drop-shadow(0 4px 10px rgba(0,0,0,0.2)); }
+        .brand h1{
+            font-size: 18px;
+            line-height: 1.1;
+            margin:0;
+            letter-spacing: .2px;
+        }
+        .brand p{
+            margin:4px 0 0;
+            font-size: 12.5px;
+            color: var(--muted);
+        }
+
+        .controls{
+            display:flex;
+            gap: 10px;
+            align-items:center;
+            flex-wrap:wrap;
+            justify-content:flex-end;
+        }
+
+        .chip{
+            display:flex;
+            gap: 8px;
+            align-items:center;
+            padding: 10px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: color-mix(in oklab, var(--panel) 88%, transparent);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow);
+        }
+
+        label.small{
+            font-size: 12px;
+            color: var(--muted);
+            user-select:none;
+            white-space:nowrap;
+        }
+
+        select, button, input[type="text"], textarea{
+            font-family: inherit;
+        }
+
+        select{
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 10px;
+            border-radius: 999px;
+            outline:none;
+            appearance:none;
+        }
+        select option{
+            color: #111;
+        }
+
+        .btn{
+            cursor:pointer;
+            border: 1px solid var(--border);
+            color: var(--text);
+            background: color-mix(in oklab, var(--panel2) 80%, transparent);
+            border-radius: 999px;
+            padding: 9px 12px;
+            display:inline-flex;
+            gap: 8px;
+            align-items:center;
+            transition: transform .08s ease, background .2s ease, border-color .2s ease;
+            user-select:none;
+            white-space:nowrap;
+        }
+        .btn:hover{ transform: translateY(-1px); border-color: color-mix(in oklab, var(--accent) 55%, var(--border)); }
+        .btn:active{ transform: translateY(0px) scale(0.99); }
+        .btn.primary{
+            border-color: color-mix(in oklab, var(--accent) 55%, var(--border));
+            background: linear-gradient(135deg, color-mix(in oklab, var(--accent) 75%, white 10%), color-mix(in oklab, var(--accent2) 65%, white 6%));
+            color: rgba(255,255,255,0.95);
+        }
+        [data-theme="light"] .btn.primary{
+            color: rgba(15,23,42,0.92);
+        }
+        .btn.danger{
+            border-color: color-mix(in oklab, var(--danger) 55%, var(--border));
+        }
+
+        .grid{
+            display:grid;
+            grid-template-columns: 1.1fr .9fr;
+            gap: 14px;
+            align-items:start;
+        }
+        @media (max-width: 900px){
+            .grid{ grid-template-columns: 1fr; }
+            .brand{ min-width:auto; }
+        }
+
+        .card{
+            border: 1px solid var(--border);
+            background: color-mix(in oklab, var(--panel) 94%, transparent);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow:hidden;
+        }
+
+        .cardHeader{
+            padding: 16px 16px 12px;
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            gap: 12px;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(180deg, color-mix(in oklab, var(--panel2) 70%, transparent), transparent);
+        }
+        .cardHeader h2{
+            font-size: 14px;
+            margin: 0;
+            letter-spacing: .2px;
+        }
+        .cardHeader .sub{
+            margin-top: 6px;
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.35;
+        }
+
+        .pad{ padding: 14px 16px 16px; }
+
+        .stats{
+            display:flex;
+            gap: 10px;
+            flex-wrap:wrap;
+            justify-content:flex-end;
+        }
+        .pill{
+            font-size: 12px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: color-mix(in oklab, var(--panel2) 70%, transparent);
+            color: var(--muted);
+        }
+        .pill b{ color: var(--text); font-weight: 650; }
+
+        .row{
+            display:flex;
+            gap: 10px;
+            align-items:center;
+            flex-wrap:wrap;
+        }
+
+        .input{
+            flex:1;
+            min-width: 200px;
+            background: color-mix(in oklab, var(--panel2) 70%, transparent);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 11px 12px;
+            outline:none;
+            color: var(--text);
+            transition: border-color .2s ease, box-shadow .2s ease;
+        }
+        .input:focus{
+            border-color: color-mix(in oklab, var(--accent) 60%, var(--border));
+            box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 20%, transparent);
+        }
+
+        .textarea{
+            width: 100%;
+            min-height: 88px;
+            resize: vertical;
+            background: color-mix(in oklab, var(--panel2) 70%, transparent);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 11px 12px;
+            outline:none;
+            color: var(--text);
+            transition: border-color .2s ease, box-shadow .2s ease;
+        }
+        .textarea-edit {
+            min-height: 400px;
+        }
+        .textarea:focus{
+            border-color: color-mix(in oklab, var(--accent) 60%, var(--border));
+            box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 20%, transparent);
+        }
+
+        .hint{
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+        .kbd{
+            font-family: var(--mono);
+            border: 1px solid var(--border);
+            background: color-mix(in oklab, var(--panel2) 60%, transparent);
+            border-bottom-width: 2px;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 11px;
+            color: var(--text);
+        }
+
+        .filterBar{
+            display:flex;
+            gap: 10px;
+            align-items:center;
+            flex-wrap:wrap;
+            margin-top: 10px;
+        }
+        .seg{
+            display:inline-flex;
+            border:1px solid var(--border);
+            border-radius: 999px;
+            overflow:hidden;
+            background: color-mix(in oklab, var(--panel2) 60%, transparent);
+        }
+        .seg button{
+            border:0;
+            padding: 8px 10px;
+            color: var(--muted);
+            background: transparent;
+            cursor:pointer;
+            font-size: 12px;
+            transition: background .2s ease, color .2s ease;
+        }
+        .seg button.active{
+            color: var(--text);
+            background: color-mix(in oklab, var(--accent) 22%, transparent);
+        }
+
+        .list{
+            display:flex;
+            flex-direction:column;
+            gap: 10px;
+            padding: 14px 16px 16px;
+        }
+
+        .task{
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            background: color-mix(in oklab, var(--panel2) 72%, transparent);
+            padding: 12px 12px 10px;
+            display:grid;
+            grid-template-columns: 32px 1fr auto;
+            gap: 10px;
+            align-items:start;
+            transition: transform .08s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease;
+            position: relative;
+        }
+        .task:hover{
+            border-color: color-mix(in oklab, var(--accent) 45%, var(--border));
+            box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+            transform: translateY(-1px);
+        }
+
+        .dragHandle{
+            width: 32px;
+            height: 32px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            display:grid;
+            place-items:center;
+            cursor: grab;
+            user-select:none;
+            background: color-mix(in oklab, var(--panel2) 70%, transparent);
+        }
+        .dragHandle:active{ cursor: grabbing; }
+        .task.dragging{
+            opacity: 0.65;
+            transform: scale(0.995);
+            box-shadow: 0 18px 50px rgba(0,0,0,0.28);
+            border-color: color-mix(in oklab, var(--accent) 70%, var(--border));
+        }
+        .task.dropTarget{
+            outline: 2px dashed color-mix(in oklab, var(--accent) 55%, transparent);
+            outline-offset: 3px;
+        }
+
+        .titleRow{
+            display:flex;
+            align-items:flex-start;
+            gap: 10px;
+            justify-content:space-between;
+        }
+        .taskTitle{
+            font-weight: 650;
+            letter-spacing: .15px;
+            line-height: 1.2;
+            margin: 2px 0 4px;
+            word-break: break-word;
+        }
+        .taskMeta{
+            display:flex;
+            gap: 8px;
+            align-items:center;
+            flex-wrap:wrap;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .badge{
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: color-mix(in oklab, var(--panel2) 60%, transparent);
+            color: var(--muted);
+        }
+        .badge.prio{
+            color: color-mix(in oklab, var(--accent) 75%, var(--text));
+            border-color: color-mix(in oklab, var(--accent) 50%, var(--border));
+            background: color-mix(in oklab, var(--accent) 16%, transparent);
+        }
+        .badge.done{
+            color: color-mix(in oklab, var(--ok) 70%, var(--text));
+            border-color: color-mix(in oklab, var(--ok) 45%, var(--border));
+            background: color-mix(in oklab, var(--ok) 14%, transparent);
+        }
+
+        .taskNotes{
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 12.5px;
+            line-height: 1.35;
+            word-break: break-word;
+            white-space: pre-wrap;
+            max-height: 5vw;
+            overflow: auto;
+        }
+
+        .actions{
+            display:flex;
+            gap: 8px;
+            align-items:center;
+        }
+        .iconBtn{
+            width: 34px;
+            height: 34px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: color-mix(in oklab, var(--panel2) 70%, transparent);
+            cursor:pointer;
+            display:grid;
+            place-items:center;
+            transition: transform .08s ease, border-color .2s ease, background .2s ease;
+        }
+        .iconBtn:hover{
+            transform: translateY(-1px);
+            border-color: color-mix(in oklab, var(--accent) 45%, var(--border));
+        }
+        .iconBtn.danger:hover{
+            border-color: color-mix(in oklab, var(--danger) 55%, var(--border));
+        }
+
+        .check{
+            width: 22px;
+            height: 22px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            display:grid;
+            place-items:center;
+            cursor:pointer;
+            background: color-mix(in oklab, var(--panel2) 65%, transparent);
+            margin-top: 4px;
+        }
+        .check svg{ opacity: 0; transform: scale(0.95); transition: opacity .15s ease, transform .15s ease; }
+        .task[data-done="true"] .check{
+            border-color: color-mix(in oklab, var(--ok) 55%, var(--border));
+            background: color-mix(in oklab, var(--ok) 18%, transparent);
+        }
+        .task[data-done="true"] .check svg{ opacity: 1; transform: scale(1); }
+        .task[data-done="true"] .taskTitle{
+            text-decoration: line-through;
+            color: color-mix(in oklab, var(--muted) 75%, var(--text));
+        }
+
+        .modalBackdrop{
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            display:none;
+            align-items:center;
+            justify-content:center;
+            padding: 18px;
+            z-index: 50;
+        }
+        .modalBackdrop.show{ display:flex; }
+        .modal{
+            width: min(940px, 100%);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: color-mix(in oklab, var(--panel2) 90%, transparent);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 25px 75px rgba(0,0,0,0.35);
+            overflow:hidden;
+        }
+        .modalHead{
+            padding: 14px 16px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            border-bottom: 1px solid var(--border);
+        }
+        .modalHead h3{
+            margin:0;
+            font-size: 14px;
+            letter-spacing: .2px;
+        }
+        .modalBody{ padding: 14px 16px 16px; }
+        .modalFoot{
+            padding: 12px 16px 14px;
+            display:flex;
+            justify-content:flex-end;
+            gap: 10px;
+            border-top: 1px solid var(--border);
+            background: linear-gradient(180deg, transparent, color-mix(in oklab, var(--panel2) 60%, transparent));
+        }
+
+        .toast{
+            position: fixed;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: color-mix(in oklab, var(--panel2) 92%, transparent);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 10px 12px;
+            box-shadow: var(--shadow);
+            display:none;
+            align-items:center;
+            gap: 10px;
+            z-index: 60;
+            color: var(--text);
+            backdrop-filter: blur(10px);
+            max-width: min(720px, calc(100% - 24px));
+        }
+        .toast.show{ display:flex; }
+        .toast .dot{
+            width: 10px; height: 10px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            flex: 0 0 auto;
+        }
+        .toast .msg{
+            font-size: 12.5px;
+            color: var(--muted);
+            overflow:hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .srOnly{
+            position:absolute;
+            width:1px;height:1px;
+            padding:0;margin:-1px;
+            overflow:hidden;clip:rect(0,0,0,0);
+            border:0;
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="topbar">
+        <div class="brand">
+            <div class="logo" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                    <path d="M7 12l3 3 7-8" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M4 6.8C4 5.25 5.25 4 6.8 4h10.4C18.75 4 20 5.25 20 6.8v10.4C20 18.75 18.75 20 17.2 20H6.8C5.25 20 4 18.75 4 17.2V6.8z" stroke="white" stroke-opacity="0.55" stroke-width="1.8"/>
+                </svg>
+            </div>
+            <div>
+                <h1>TODO — List</h1>
+                <p>Edit • Complete • Drag & Drop reorder</p>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="chip">
+                <label class="small" for="themeSel">Theme</label>
+                <select id="themeSel" title="Theme">
+                    <option value="system">System</option>
+                    <option value="dark">Dark</option>
+                    <option value="light">Light</option>
+                </select>
+            </div>
+
+            <div class="chip">
+                <label class="small" for="accentSel">Accent</label>
+                <select id="accentSel" title="Accent">
+                    <option value="violet">Violet</option>
+                    <option value="cyan">Cyan</option>
+                    <option value="rose">Rose</option>
+                    <option value="lime">Lime</option>
+                    <option value="amber">Amber</option>
+                </select>
+            </div>
+
+            <button class="btn" id="exportBtn" title="Export tasks as JSON">
+                <span aria-hidden="true">⤓</span> Export
+            </button>
+            <button class="btn danger" id="wipeBtn" title="Delete all tasks">
+                <span aria-hidden="true">🗑</span> Wipe
+            </button>
+        </div>
+    </div>
+
+    <div class="grid">
+        <!-- Left: List -->
+        <section class="card" aria-label="Task list">
+            <div class="cardHeader">
+                <div>
+                    <h2>Priority</h2>
+                    <div class="sub">
+                        Drag the handle to reorder.<br/>
+                        Click a task to edit. Use <span class="kbd">Enter</span> to add quickly.
+                    </div>
+                </div>
+                <div class="stats">
+                    <div class="pill"><b id="countAll">0</b> total</div>
+                    <div class="pill"><b id="countOpen">0</b> open</div>
+                    <div class="pill"><b id="countDone">0</b> done</div>
+                </div>
+            </div>
+
+            <div class="pad">
+                <div class="filterBar">
+                    <div class="seg" role="tablist" aria-label="Filters">
+                        <button id="fAll" class="active" data-filter="all" role="tab" aria-selected="true">All</button>
+                        <button id="fOpen" data-filter="open" role="tab" aria-selected="false">Open</button>
+                        <button id="fDone" data-filter="done" role="tab" aria-selected="false">Done</button>
+                    </div>
+                    <input id="search" class="input" type="text" placeholder="Search tasks…" autocomplete="off" />
+                    <button class="btn" id="sortBtn" title="Toggle: keep manual order / auto sort open first">
+                        <span aria-hidden="true">⇅</span> Sort: Manual
+                    </button>
+                </div>
+            </div>
+
+            <div id="list" class="list"></div>
+        </section>
+
+        <!-- Right: Add -->
+        <section class="card" aria-label="Add task">
+            <div class="cardHeader">
+                <div>
+                    <h2>Add task</h2>
+                    <div class="sub">Create tasks fast, then drag them into the right priority.</div>
+                </div>
+            </div>
+            <div class="pad">
+                <div class="row">
+                    <input id="newTitle" class="input" type="text" placeholder="Task title…" maxlength="140" />
+                    <button class="btn primary" id="addBtn">
+                        <span aria-hidden="true">＋</span> Add
+                    </button>
+                </div>
+                <div style="height:10px"></div>
+                <textarea id="newNotes" class="textarea" placeholder="Notes (optional)"></textarea>
+                <div class="hint">
+                    Tips: <span class="kbd">Enter</span> adds (when title focused). <span class="kbd">Esc</span> closes editor.
+                    Export creates a JSON file you can save. Everything is stored in your browser’s LocalStorage.
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- Modal: Edit -->
+<div id="backdrop" class="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+        <div class="modalHead">
+            <h3 id="modalTitle">Edit task</h3>
+            <button class="iconBtn" id="closeModalBtn" title="Close (Esc)" aria-label="Close">
+                ✕
+            </button>
+        </div>
+        <div class="modalBody">
+            <label class="small" for="editTitle">Title</label>
+            <input id="editTitle" class="input" type="text" maxlength="140" />
+            <div style="height:10px"></div>
+            <label class="small" for="editNotes">Notes</label>
+            <textarea id="editNotes" class="textarea textarea-edit"></textarea>
+            <div style="height:10px"></div>
+
+            <div class="row" style="justify-content:space-between">
+                <div class="row">
+                    <button class="btn" id="toggleDoneBtn" title="Mark done/undone">
+                        ✓ Toggle Done
+                    </button>
+                    <button class="btn danger" id="deleteBtn" title="Delete task">
+                        🗑 Delete
+                    </button>
+                </div>
+                <div class="row" style="gap:8px">
+                    <span class="badge prio" id="prioBadge">Priority #</span>
+                    <span class="badge" id="dateBadge">—</span>
+                </div>
+            </div>
+        </div>
+        <div class="modalFoot">
+            <button class="btn" id="cancelBtn">Cancel</button>
+            <button class="btn primary" id="saveBtn">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast" role="status" aria-live="polite">
+    <div class="dot" aria-hidden="true"></div>
+    <div class="msg" id="toastMsg">Saved</div>
+</div>
+
+<script>
+    /**
+     * Modern TODO list (single-file).
+     *
+     * Key ideas:
+     * - Data model is a plain JS array: tasks[].
+     * - Persist by saving that array as JSON into localStorage.
+     * - Drag & drop reorder updates the array order, then we re-render and save.
+     * - Theme/accent preferences are also stored in localStorage.
+     */
+
+        // ===== Storage keys =====
+    const LS_KEYS = {
+            tasks: "todo.tasks.v1",
+            prefs: "todo.prefs.v1"
+        };
+
+    // ===== App state =====
+    /** @type {{ id: string, title: string, notes: string, done: boolean, createdAt: number, updatedAt: number }[]} */
+    let tasks = [];
+
+    let filter = "all";     // all | open | done
+    let searchText = "";
+    let autoSortOpenFirst = false; // optional toggle
+
+    /** Editing state */
+    let editingId = null;
+
+    // ===== DOM =====
+    const $ = (sel) => document.querySelector(sel);
+
+    const listEl = $("#list");
+    const newTitleEl = $("#newTitle");
+    const newNotesEl = $("#newNotes");
+    const addBtn = $("#addBtn");
+
+    const searchEl = $("#search");
+    const sortBtn = $("#sortBtn");
+
+    const countAllEl = $("#countAll");
+    const countOpenEl = $("#countOpen");
+    const countDoneEl = $("#countDone");
+
+    const backdrop = $("#backdrop");
+    const editTitleEl = $("#editTitle");
+    const editNotesEl = $("#editNotes");
+    const prioBadge = $("#prioBadge");
+    const dateBadge = $("#dateBadge");
+
+    const saveBtn = $("#saveBtn");
+    const cancelBtn = $("#cancelBtn");
+    const closeModalBtn = $("#closeModalBtn");
+    const deleteBtn = $("#deleteBtn");
+    const toggleDoneBtn = $("#toggleDoneBtn");
+
+    const themeSel = $("#themeSel");
+    const accentSel = $("#accentSel");
+    const exportBtn = $("#exportBtn");
+    const wipeBtn = $("#wipeBtn");
+
+    const toastEl = $("#toast");
+    const toastMsgEl = $("#toastMsg");
+
+    // ===== Utils =====
+    function uid() {
+        // reasonably unique for a local app
+        return "t_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
+    }
+
+    function clampText(s) {
+        return (s ?? "").toString().trim();
+    }
+
+    function fmtDate(ts) {
+        const d = new Date(ts);
+        return d.toLocaleString(undefined, { year:"numeric", month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit" });
+    }
+
+    function showToast(message) {
+        toastMsgEl.textContent = message;
+        toastEl.classList.add("show");
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(() => toastEl.classList.remove("show"), 1800);
+    }
+
+    // ===== Persistence =====
+    function loadTasks() {
+        try {
+            const raw = localStorage.getItem(LS_KEYS.tasks);
+            tasks = raw ? JSON.parse(raw) : [];
+            if (!Array.isArray(tasks)) tasks = [];
+        } catch {
+            tasks = [];
+        }
+    }
+
+    function saveTasks() {
+        localStorage.setItem(LS_KEYS.tasks, JSON.stringify(tasks));
+    }
+
+    function loadPrefs() {
+        try {
+            const raw = localStorage.getItem(LS_KEYS.prefs);
+            return raw ? JSON.parse(raw) : {};
+        } catch {
+            return {};
+        }
+    }
+
+    function savePrefs(prefs) {
+        localStorage.setItem(LS_KEYS.prefs, JSON.stringify(prefs));
+    }
+
+    // ===== Theme handling =====
+    function applyTheme(themeMode) {
+        // themeMode: system | dark | light
+        const root = document.documentElement;
+        if (themeMode === "system") {
+            const prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+            root.dataset.theme = prefersLight ? "light" : "dark";
+        } else {
+            root.dataset.theme = themeMode;
+        }
+    }
+
+    function applyAccent(accent) {
+        document.documentElement.dataset.accent = accent;
+    }
+
+    // ===== Filtering + derived view =====
+    function getViewTasks() {
+        let view = [...tasks];
+
+        if (autoSortOpenFirst) {
+            // Keep relative order inside each group, but move open tasks first.
+            const open = view.filter(t => !t.done);
+            const done = view.filter(t => t.done);
+            view = [...open, ...done];
+        }
+
+        if (filter === "open") view = view.filter(t => !t.done);
+        if (filter === "done") view = view.filter(t => t.done);
+
+        const q = searchText.trim().toLowerCase();
+        if (q) {
+            view = view.filter(t =>
+                t.title.toLowerCase().includes(q) || (t.notes || "").toLowerCase().includes(q)
+            );
+        }
+
+        return view;
+    }
+
+    function updateStats() {
+        const all = tasks.length;
+        const done = tasks.filter(t => t.done).length;
+        const open = all - done;
+
+        countAllEl.textContent = String(all);
+        countOpenEl.textContent = String(open);
+        countDoneEl.textContent = String(done);
+    }
+
+    // ===== Rendering =====
+    function render() {
+        updateStats();
+
+        const view = getViewTasks();
+
+        listEl.innerHTML = "";
+
+        if (view.length === 0) {
+            const empty = document.createElement("div");
+            empty.style.padding = "12px 16px 16px";
+            empty.style.color = "var(--muted)";
+            empty.style.fontSize = "13px";
+            empty.innerHTML = `
+          <div style="padding:14px 12px;border:1px dashed var(--border);border-radius:16px;background:color-mix(in oklab, var(--panel2) 40%, transparent)">
+            No tasks here yet.
+            <div style="margin-top:6px;font-size:12px;line-height:1.4">
+              Add a task on the right, then drag it into priority order.
+            </div>
+          </div>
+        `;
+            listEl.appendChild(empty);
+            return;
+        }
+
+        // We render in the view order, but DnD should reorder the real tasks array.
+        // To do that, we use data-id and locate indices in the global array.
+        for (let i = 0; i < view.length; i++) {
+            const t = view[i];
+            const globalIndex = tasks.findIndex(x => x.id === t.id);
+
+            const item = document.createElement("div");
+            item.className = "task";
+            item.draggable = true;
+            item.dataset.id = t.id;
+            item.dataset.done = String(!!t.done);
+
+            // Drag handle (still draggable via the container; handle improves UX)
+            const handle = document.createElement("div");
+            handle.className = "dragHandle";
+            handle.title = "Drag to reorder";
+            handle.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M9 7h.01M9 12h.01M9 17h.01M15 7h.01M15 12h.01M15 17h.01"
+              stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>
+          </svg>
+        `;
+
+            const main = document.createElement("div");
+            main.style.minWidth = "0";
+
+            const titleRow = document.createElement("div");
+            titleRow.className = "titleRow";
+
+            const left = document.createElement("div");
+            left.style.minWidth = "0";
+
+            const title = document.createElement("div");
+            title.className = "taskTitle";
+            title.textContent = t.title || "(Untitled task)";
+
+            const meta = document.createElement("div");
+            meta.className = "taskMeta";
+            const prio = document.createElement("span");
+            prio.className = "badge prio";
+            prio.textContent = "Priority #" + (globalIndex + 1);
+
+            const doneBadge = document.createElement("span");
+            doneBadge.className = "badge done";
+            doneBadge.textContent = "Done";
+            doneBadge.style.display = t.done ? "inline-flex" : "none";
+
+            const created = document.createElement("span");
+            created.className = "badge";
+            created.textContent = "Created " + fmtDate(t.createdAt);
+
+            meta.appendChild(prio);
+            meta.appendChild(doneBadge);
+            meta.appendChild(created);
+
+            left.appendChild(title);
+            left.appendChild(meta);
+
+            const actions = document.createElement("div");
+            actions.className = "actions";
+
+            const check = document.createElement("div");
+            check.className = "check";
+            check.title = t.done ? "Mark as not done" : "Mark as done";
+            check.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M7 12l3 3 7-8" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        `;
+
+            const editBtn = document.createElement("button");
+            editBtn.className = "iconBtn";
+            editBtn.title = "Edit";
+            editBtn.innerHTML = "✎";
+
+            const delBtn = document.createElement("button");
+            delBtn.className = "iconBtn danger";
+            delBtn.title = "Delete";
+            delBtn.innerHTML = "🗑";
+
+            actions.appendChild(check);
+            actions.appendChild(editBtn);
+            actions.appendChild(delBtn);
+
+            titleRow.appendChild(left);
+            titleRow.appendChild(actions);
+
+            main.appendChild(titleRow);
+
+            if (t.notes && t.notes.trim()) {
+                const notes = document.createElement("div");
+                notes.className = "taskNotes";
+                notes.textContent = t.notes;
+                main.appendChild(notes);
+            }
+
+            item.appendChild(handle);
+            item.appendChild(main);
+
+            // Click to edit (but don't trigger when clicking buttons)
+            item.addEventListener("click", (e) => {
+                const target = e.target;
+                if (target.closest(".iconBtn") || target.closest(".check") || target.closest(".dragHandle")) return;
+                openEdit(t.id);
+            });
+
+            check.addEventListener("click", (e) => {
+                e.stopPropagation();
+                toggleDone(t.id);
+            });
+
+            editBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                openEdit(t.id);
+            });
+
+            delBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                removeTask(t.id);
+            });
+
+            // Drag & drop handlers
+            item.addEventListener("dragstart", (e) => {
+                item.classList.add("dragging");
+                e.dataTransfer.setData("text/plain", t.id);
+                e.dataTransfer.effectAllowed = "move";
+            });
+
+            item.addEventListener("dragend", () => {
+                item.classList.remove("dragging");
+                [...listEl.querySelectorAll(".task")].forEach(el => el.classList.remove("dropTarget"));
+            });
+
+            item.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                const draggingId = e.dataTransfer.getData("text/plain");
+                if (!draggingId || draggingId === t.id) return;
+                item.classList.add("dropTarget");
+                e.dataTransfer.dropEffect = "move";
+            });
+
+            item.addEventListener("dragleave", () => item.classList.remove("dropTarget"));
+
+            item.addEventListener("drop", (e) => {
+                e.preventDefault();
+                item.classList.remove("dropTarget");
+                const draggedId = e.dataTransfer.getData("text/plain");
+                if (!draggedId || draggedId === t.id) return;
+                reorderByIds(draggedId, t.id);
+            });
+
+            listEl.appendChild(item);
+        }
+    }
+
+    // ===== Mutations =====
+    function addTask(title, notes) {
+        const t = clampText(title);
+        if (!t) {
+            showToast("Title is required");
+            newTitleEl.focus();
+            return;
+        }
+        const now = Date.now();
+        tasks.unshift({
+            id: uid(),
+            title: t,
+            notes: clampText(notes),
+            done: false,
+            createdAt: now,
+            updatedAt: now
+        });
+        saveTasks();
+        render();
+        showToast("Task added");
+        newTitleEl.value = "";
+        newNotesEl.value = "";
+        newTitleEl.focus();
+    }
+
+    function updateTask(id, { title, notes } = {}) {
+        const idx = tasks.findIndex(t => t.id === id);
+        if (idx < 0) return;
+        tasks[idx] = {
+            ...tasks[idx],
+            title: clampText(title),
+            notes: clampText(notes),
+            updatedAt: Date.now()
+        };
+        saveTasks();
+        render();
+        showToast("Saved");
+    }
+
+    function removeTask(id) {
+        const idx = tasks.findIndex(t => t.id === id);
+        if (idx < 0) return;
+        const name = tasks[idx].title;
+        if (!confirm(`Delete "${name}"?`)) return;
+        tasks.splice(idx, 1);
+        saveTasks();
+        render();
+        showToast("Deleted");
+        if (editingId === id) closeEdit();
+    }
+
+    function toggleDone(id) {
+        const idx = tasks.findIndex(t => t.id === id);
+        if (idx < 0) return;
+        tasks[idx].done = !tasks[idx].done;
+        tasks[idx].updatedAt = Date.now();
+        saveTasks();
+        render();
+        showToast(tasks[idx].done ? "Marked done" : "Marked open");
+    }
+
+    function reorderByIds(draggedId, targetId) {
+        // Reorder the GLOBAL tasks array: move dragged task before target task
+        const from = tasks.findIndex(t => t.id === draggedId);
+        const to = tasks.findIndex(t => t.id === targetId);
+        if (from < 0 || to < 0) return;
+
+        const [moved] = tasks.splice(from, 1);
+        const insertAt = from < to ? to : to;
+        tasks.splice(insertAt, 0, moved);
+
+        saveTasks();
+        render();
+        showToast("Reordered");
+    }
+
+    // ===== Modal edit =====
+    function openEdit(id) {
+        const t = tasks.find(x => x.id === id);
+        if (!t) return;
+        editingId = id;
+
+        editTitleEl.value = t.title;
+        editNotesEl.value = t.notes || "";
+        const prio = tasks.findIndex(x => x.id === id) + 1;
+        prioBadge.textContent = "Priority #" + prio;
+
+        dateBadge.textContent = "Updated " + fmtDate(t.updatedAt);
+
+        toggleDoneBtn.textContent = t.done ? "↩ Mark Open" : "✓ Mark Done";
+
+        backdrop.classList.add("show");
+        setTimeout(() => editTitleEl.focus(), 0);
+    }
+
+    function closeEdit() {
+        editingId = null;
+        backdrop.classList.remove("show");
+    }
+
+    // ===== Export / wipe =====
+    function exportJson() {
+        const payload = {
+            exportedAt: new Date().toISOString(),
+            tasks
+        };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "todo-export.json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast("Exported JSON");
+    }
+
+    function wipeAll() {
+        if (!confirm("This will delete ALL tasks. Continue?")) return;
+        tasks = [];
+        saveTasks();
+        render();
+        showToast("Wiped");
+    }
+
+    // ===== Wire UI =====
+    addBtn.addEventListener("click", () => addTask(newTitleEl.value, newNotesEl.value));
+    newTitleEl.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            addTask(newTitleEl.value, newNotesEl.value);
+        }
+    });
+
+    searchEl.addEventListener("input", () => {
+        searchText = searchEl.value || "";
+        render();
+    });
+
+    sortBtn.addEventListener("click", () => {
+        autoSortOpenFirst = !autoSortOpenFirst;
+        sortBtn.innerHTML = `<span aria-hidden="true">⇅</span> Sort: ${autoSortOpenFirst ? "Open First" : "Manual"}`;
+        render();
+        showToast(autoSortOpenFirst ? "Open tasks first" : "Manual order");
+    });
+
+    function setFilter(next) {
+        filter = next;
+        // update UI
+        for (const btn of [$("#fAll"), $("#fOpen"), $("#fDone")]) {
+            const isActive = btn.dataset.filter === next;
+            btn.classList.toggle("active", isActive);
+            btn.setAttribute("aria-selected", isActive ? "true" : "false");
+        }
+        render();
+    }
+    $("#fAll").addEventListener("click", () => setFilter("all"));
+    $("#fOpen").addEventListener("click", () => setFilter("open"));
+    $("#fDone").addEventListener("click", () => setFilter("done"));
+
+    // Modal buttons
+    saveBtn.addEventListener("click", () => {
+        if (!editingId) return;
+        const t = clampText(editTitleEl.value);
+        if (!t) {
+            showToast("Title is required");
+            editTitleEl.focus();
+            return;
+        }
+        updateTask(editingId, { title: editTitleEl.value, notes: editNotesEl.value });
+        closeEdit();
+    });
+
+    cancelBtn.addEventListener("click", closeEdit);
+    closeModalBtn.addEventListener("click", closeEdit);
+
+    deleteBtn.addEventListener("click", () => {
+        if (!editingId) return;
+        removeTask(editingId);
+    });
+
+    toggleDoneBtn.addEventListener("click", () => {
+        if (!editingId) return;
+        toggleDone(editingId);
+        // Keep modal open, but refresh modal fields
+        openEdit(editingId);
+    });
+
+    // Close modal on backdrop click
+    backdrop.addEventListener("click", (e) => {
+        if (e.target === backdrop) closeEdit();
+    });
+
+    // Keyboard shortcuts
+    window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && backdrop.classList.contains("show")) {
+            e.preventDefault();
+            closeEdit();
+        }
+        // Ctrl/Cmd+K focuses search
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+            e.preventDefault();
+            searchEl.focus();
+        }
+    });
+
+    exportBtn.addEventListener("click", exportJson);
+    wipeBtn.addEventListener("click", wipeAll);
+
+    // Theme + accent persistence
+    const prefs = loadPrefs();
+    themeSel.value = prefs.theme ?? "system";
+    accentSel.value = prefs.accent ?? "violet";
+
+    function syncPrefs() {
+        const p = loadPrefs();
+        p.theme = themeSel.value;
+        p.accent = accentSel.value;
+        savePrefs(p);
+    }
+
+    themeSel.addEventListener("change", () => {
+        applyTheme(themeSel.value);
+        syncPrefs();
+        showToast("Theme updated");
+    });
+
+    accentSel.addEventListener("change", () => {
+        applyAccent(accentSel.value);
+        syncPrefs();
+        showToast("Accent updated");
+    });
+
+    // React to system theme changes when "system" selected
+    if (window.matchMedia) {
+        window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", () => {
+            if (themeSel.value === "system") applyTheme("system");
+        });
+    }
+
+    // ===== Boot =====
+    (function init() {
+        applyAccent(accentSel.value);
+        applyTheme(themeSel.value);
+
+        loadTasks();
+        render();
+    })();
+</script>
+</body>
+</html>
